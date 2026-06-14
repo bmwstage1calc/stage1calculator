@@ -84,7 +84,7 @@
 
     <input id="search" placeholder="Поиск BMW / кузов / двигатель">
 
-    <select id="carList" size="10"></select>
+    <div id="carList" class="car-list"></div>
 
     <br>
 
@@ -98,7 +98,7 @@
   <script>
     let cars = [];
     let filteredCars = [];
-
+    let selectedCar = null;
     function engineFamily(engine) {
       if (engine === "Electric") return "Electric";
       return engine.substring(0, 3);
@@ -128,23 +128,30 @@
     }
 
     function updateList() {
-      const search = document.getElementById("search").value.toLowerCase();
-      const list = document.getElementById("carList");
+  const searchInput = document.getElementById("search");
+  const search = searchInput ? searchInput.value.toLowerCase() : "";
+  const list = document.getElementById("carList");
 
-      list.innerHTML = "";
+  list.innerHTML = "";
 
-      filteredCars = cars.filter(car => {
-        const fullName = `${car.model} ${car.body} ${car.engine}`.toLowerCase();
-        return fullName.includes(search);
-      });
+  filteredCars = cars.filter(car => {
+    const fullName = `${car.model} ${car.body} ${car.engine}`.toLowerCase();
+    return fullName.includes(search);
+  });
 
-      filteredCars.forEach((car, index) => {
-        const option = document.createElement("option");
-        option.value = index;
-        option.textContent = `${car.model} | ${car.body} | ${car.engine}`;
-        list.appendChild(option);
-      });
-    }
+  filteredCars.forEach(car => {
+    const item = document.createElement("div");
+    item.className = "car-item";
+    item.textContent = `${car.model} | ${car.body} | ${car.engine}`;
+
+    item.onclick = () => {
+      selectedCar = car;
+      calculate();
+    };
+
+    list.appendChild(item);
+  });
+}
 
     function calculate() {
       const list = document.getElementById("carList");
