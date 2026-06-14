@@ -141,10 +141,13 @@
   list.innerHTML = "";
 
   filteredCars = cars.filter(car => {
-    const fullName = `${car.model} ${car.body} ${car.engine}`.toLowerCase();
-    return fullName.includes(search);
-  });
+  if (!car.model || !car.body || !car.engine) return false;
 
+  const fullName =
+    `${car.model} ${car.body} ${car.engine}`.toLowerCase();
+
+  return fullName.includes(search);
+});
   filteredCars.forEach(car => {
     const item = document.createElement("div");
     item.className = "car-item";
