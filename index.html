@@ -56,7 +56,7 @@
   }
 
   async function loadCSV() {
-    const response = await fetch("bmw_database.csv");
+    const response = await fetch("./bmw_database.csv");
     const text = await response.text();
 
     const lines = text
