@@ -38,15 +38,30 @@
       margin-bottom: 20px;
     }
 
-    select {
-      width: 90%;
-      height: 220px;
-      background: #151922;
-      color: white;
-      font-size: 16px;
-      border: 1px solid #00a3ff;
-      border-radius: 8px;
-    }
+    .car-list {
+  width: 90%;
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 0 auto;
+  background: #151922;
+  border: 1px solid #00a3ff;
+  border-radius: 8px;
+  text-align: left;
+  color: white;
+}
+
+.car-item {
+  padding: 12px;
+  border-bottom: 1px solid #24324a;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+}
+
+.car-item:hover {
+  background: #00a3ff;
+  color: black;
+}
 
     button {
       margin-top: 20px;
@@ -154,28 +169,25 @@
 }
 
     function calculate() {
-      const list = document.getElementById("carList");
-      const selectedIndex = list.value;
+  const car = selectedCar;
 
-      if (selectedIndex === "") {
-        alert("Выбери автомобиль из списка");
-        return;
-      }
+  if (!car) {
+    alert("Выбери автомобиль из списка");
+    return;
+  }
 
-      const car = filteredCars[selectedIndex];
+  const stockHp = Number(car.stock_hp);
+  const stockNm = Number(car.stock_nm);
+  const stage1Hp = Number(car.stage1_hp);
+  const stage1Nm = Number(car.stage1_nm);
 
-      const stockHp = Number(car.stock_hp);
-      const stockNm = Number(car.stock_nm);
-      const stage1Hp = Number(car.stage1_hp);
-      const stage1Nm = Number(car.stage1_nm);
+  const hpGain = stage1Hp - stockHp;
+  const nmGain = stage1Nm - stockNm;
 
-      const hpGain = stage1Hp - stockHp;
-      const nmGain = stage1Nm - stockNm;
+  const hpPercent = ((hpGain / stockHp) * 100).toFixed(1);
+  const nmPercent = ((nmGain / stockNm) * 100).toFixed(1);
 
-      const hpPercent = ((hpGain / stockHp) * 100).toFixed(1);
-      const nmPercent = ((nmGain / stockNm) * 100).toFixed(1);
-
-      document.getElementById("result").innerText =
+  document.getElementById("result").innerText =
 `Модель: ${car.model}
 Кузов: ${car.body}
 Двигатель: ${car.engine}
@@ -186,7 +198,7 @@ Stage 1: ${stage1Hp} л.с. / ${stage1Nm} Нм
 
 Прирост мощности: +${hpGain} л.с. (${hpPercent}%)
 Прирост момента: +${nmGain} Нм (${nmPercent}%)`;
-    }
+}
 
     document.getElementById("search").addEventListener("input", updateList);
 
