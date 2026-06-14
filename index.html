@@ -80,15 +80,31 @@
       color: #888;
       font-size: 13px;
     }
-  </style>
+  .language-switcher {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.language-switcher select {
+  background: #151922;
+  color: white;
+  border: 1px solid #00a3ff;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+}</style>
 </head>
-<body>
+<body><div class="language-switcher">
+  <select id="language" onchange="changeLanguage()">
+    <option value="ru">🇷🇺 Русский</option>
+    <option value="en">🇬🇧 English</option>
+  </select>
+</div>
   <div class="app">
     <img src="bmw_logo.png" alt="BMW Logo">
-<select id="language" onchange="changeLanguage()">
-  <option value="ru">Русский</option>
-  <option value="en">English</option>
-</select>
+
     <h1>BMW Stage1 Calculator</h1>
 
     <input id="search" placeholder="Поиск BMW / кузов / двигатель">
