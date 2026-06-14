@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>BMW Stage1 Calculator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f1115;
+      color: white;
+      text-align: center;
+    }
+
+    .app {
+      max-width: 900px;
+      margin: auto;
+      padding: 25px;
+    }
+
+    img {
+      width: 120px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      color: #00a3ff;
+    }
+
+    input {
+      width: 90%;
+      padding: 15px;
+      font-size: 18px;
+      background: #102542;
+      color: white;
+      border: 1px solid #00a3ff;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    select {
+      width: 90%;
+      height: 220px;
+      background: #151922;
+      color: white;
+      font-size: 16px;
+      border: 1px solid #00a3ff;
+      border-radius: 8px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 15px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      background: #00a3ff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .result {
+      margin-top: 25px;
+      background: #151922;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: left;
+      font-size: 18px;
+      white-space: pre-line;
+    }
+
+    .footer {
+      margin-top: 20px;
+      color: #888;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <img src="bmw_logo.png" alt="BMW Logo">
+
+    <h1>BMW Stage1 Calculator</h1>
+
+    <input id="search" placeholder="Поиск BMW / кузов / двигатель">
+
+    <select id="carList" size="10"></select>
+
+    <br>
+
+    <button onclick="calculate()">Рассчитать Stage 1</button>
+
+    <div class="result" id="result"></div>
+
+    <div class="footer" id="footer"></div>
+  </div>
+
+  <script>
+    let cars = [];
+    let filteredCars = [];
+
+    function engineFamily(engine) {
+      if (engine === "Electric") return "Electric";
+      return engine.substring(0, 3);
+    }
+
+    async function loadCSV() {
+      const response = await fetch("bmw_database.csv");
+      const text = await response.text();
+
+      const lines = text.trim().split("\n");
+      const headers = lines[0].split(",");
+
+      cars = lines.slice(1).map(line => {
+        const values = line.split(",");
+        let car = {};
+        headers.forEach((header, index) => {
+          car[header.trim()] = values[index]?.trim();
+        });
+        return car;
+      });
+
+      filteredCars = [...cars];
+      updateList();
+
+      document.getElementById("footer").innerText =
+        `BMW Performance Database 1996–2025 | Моделей в базе: ${cars.length}`;
+    }
+
+    function updateList() {
+      const search = document.getElementById("search").value.toLowerCase();
+      const list = document.getElementById("carList");
+
+      list.innerHTML = "";
+
+      filteredCars = cars.filter(car => {
+        const fullName = `${car.model} ${car.body} ${car.engine}`.toLowerCase();
+        return fullName.includes(search);
+      });
+
+      filteredCars.forEach((car, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = `${car.model} | ${car.body} | ${car.engine}`;
+        list.appendChild(option);
+      });
+    }
+
+    function calculate() {
+      const list = document.getElementById("carList");
+      const selectedIndex = list.value;
+
+      if (selectedIndex === "") {
+        alert("Выбери автомобиль из списка");
+        return;
+      }
+
+      const car = filteredCars[selectedIndex];
+
+      const stockHp = Number(car.stock_hp);
+      const stockNm = Number(car.stock_nm);
+      const stage1Hp = Number(car.stage1_hp);
+      const stage1Nm = Number(car.stage1_nm);
+
+      const hpGain = stage1Hp - stockHp;
+      const nmGain = stage1Nm - stockNm;
+
+      const hpPercent = ((hpGain / stockHp) * 100).toFixed(1);
+      const nmPercent = ((nmGain / stockNm) * 100).toFixed(1);
+
+      document.getElementById("result").innerText =
+`Модель: ${car.model}
+Кузов: ${car.body}
+Двигатель: ${car.engine}
+Серия двигателя: ${engineFamily(car.engine)}
+
+Завод: ${stockHp} л.с. / ${stockNm} Нм
+Stage 1: ${stage1Hp} л.с. / ${stage1Nm} Нм
+
+Прирост мощности: +${hpGain} л.с. (${hpPercent}%)
+Прирост момента: +${nmGain} Нм (${nmPercent}%)`;
+    }
+
+    document.getElementById("search").addEventListener("input", updateList);
+
+    loadCSV();
+  </script>
+</body>
+</html>
