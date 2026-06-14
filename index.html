@@ -1,139 +1,323 @@
-<script>
-  let cars = [];
-  let filteredCars = [];
-  let selectedCar = null;
-  let currentLang = "ru";
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMW Stage1 Calculator</title>
 
-  const translations = {
-    ru: {
-      search: "Поиск BMW / кузов / двигатель",
-      model: "Модель",
-      body: "Кузов",
-      engine: "Двигатель",
-      engineCode: "Маркировка двигателя",
-      family: "Серия двигателя",
-      stock: "Завод",
-      stage1: "Stage 1",
-      hpGain: "Прирост мощности",
-      nmGain: "Прирост момента",
-      hp: "л.с.",
-      nm: "Нм",
-      choose: "Выбери автомобиль из списка",
-      footer: "BMW Performance Database 1996–2025 | Моделей в базе"
-    },
-    en: {
-      search: "Search BMW / body / engine",
-      model: "Model",
-      body: "Body",
-      engine: "Engine",
-      engineCode: "Engine code",
-      family: "Engine family",
-      stock: "Stock",
-      stage1: "Stage 1",
-      hpGain: "Power gain",
-      nmGain: "Torque gain",
-      hp: "hp",
-      nm: "Nm",
-      choose: "Select a car from the list",
-      footer: "BMW Performance Database 1996–2025 | Models in database"
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f1115;
+      color: white;
+      text-align: center;
     }
-  };
 
-  function engineFamily(engineCode) {
-    if (!engineCode) return "-";
-    if (engineCode === "Electric") return "Electric";
-    if (engineCode.includes("Hybrid")) return "Hybrid";
-    return engineCode.substring(0, 3);
-  }
+    .app {
+      max-width: 1000px;
+      margin: auto;
+      padding: 25px;
+    }
 
-  function changeLanguage() {
-    currentLang = document.getElementById("language").value;
-    document.getElementById("search").placeholder = translations[currentLang].search;
-    document.getElementById("footer").innerText =
-      `${translations[currentLang].footer}: ${cars.length}`;
+    h1 {
+      color: #00a3ff;
+      margin-bottom: 10px;
+    }
 
-    if (selectedCar) calculate();
-  }
+    .subtitle {
+      color: #cccccc;
+      margin-bottom: 20px;
+    }
 
-  async function loadCSV() {
-    const response = await fetch("./bmw_database.csv");
-    const text = await response.text();
+    select,
+    input {
+      width: 90%;
+      max-width: 650px;
+      padding: 14px;
+      font-size: 17px;
+      background: #102542;
+      color: white;
+      border: 1px solid #00a3ff;
+      border-radius: 8px;
+      margin: 8px 0;
+      outline: none;
+    }
 
-    const lines = text
-      .replace(/\r/g, "")
-      .trim()
-      .split("\n")
-      .filter(line => line.trim() !== "");
+    #carList {
+      width: 90%;
+      max-width: 800px;
+      margin: 20px auto;
+      text-align: left;
+    }
 
-    const headers = lines[0].split(",").map(h => h.trim());
+    .car-item {
+      background: #151922;
+      padding: 12px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
 
-    cars = lines.slice(1).map(line => {
-      const values = line.split(",").map(v => v.trim());
-      let car = {};
+    .car-item:hover {
+      border-color: #00a3ff;
+      background: #1d2430;
+    }
 
-      headers.forEach((header, index) => {
-        car[header] = values[index];
+    #result {
+      width: 90%;
+      max-width: 800px;
+      margin: 20px auto;
+      background: #151922;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: left;
+      white-space: pre-line;
+      font-size: 17px;
+      line-height: 1.5;
+      min-height: 120px;
+    }
+
+    .error {
+      color: #ff6060;
+      font-weight: bold;
+    }
+
+    footer {
+      color: #888888;
+      margin-top: 25px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <h1>BMW Stage1 Calculator</h1>
+
+    <div class="subtitle">
+      BMW Performance Database 1996–2025
+    </div>
+
+    <select id="language">
+      <option value="ru">Русский</option>
+      <option value="en">English</option>
+    </select>
+
+    <br>
+
+    <input
+      id="search"
+      type="text"
+      placeholder="Поиск BMW / кузов / двигатель"
+      autocomplete="off"
+    >
+
+    <div id="carList"></div>
+
+    <div id="result">Загружаю базу BMW...</div>
+
+    <footer id="footer">BMW Performance Database</footer>
+  </div>
+
+  <script>
+    let cars = [];
+    let filteredCars = [];
+    let selectedCar = null;
+    let currentLang = "ru";
+
+    const translations = {
+      ru: {
+        search: "Поиск BMW / кузов / двигатель",
+        model: "Модель",
+        body: "Кузов",
+        engine: "Двигатель",
+        engineCode: "Маркировка двигателя",
+        family: "Серия двигателя",
+        stock: "Завод",
+        stage1: "Stage 1",
+        hpGain: "Прирост мощности",
+        nmGain: "Прирост момента",
+        hp: "л.с.",
+        nm: "Нм",
+        choose: "Выбери автомобиль из списка",
+        loaded: "База загружена. Выбери автомобиль из списка.",
+        notFound: "Ничего не найдено",
+        loadError: "Ошибка: не удалось загрузить bmw_database.csv",
+        footer: "BMW Performance Database 1996–2025 | Моделей в базе"
+      },
+      en: {
+        search: "Search BMW / body / engine",
+        model: "Model",
+        body: "Body",
+        engine: "Engine",
+        engineCode: "Engine code",
+        family: "Engine family",
+        stock: "Stock",
+        stage1: "Stage 1",
+        hpGain: "Power gain",
+        nmGain: "Torque gain",
+        hp: "hp",
+        nm: "Nm",
+        choose: "Select a car from the list",
+        loaded: "Database loaded. Select a car from the list.",
+        notFound: "Nothing found",
+        loadError: "Error: failed to load bmw_database.csv",
+        footer: "BMW Performance Database 1996–2025 | Models in database"
+      }
+    };
+
+    function engineFamily(engineCode) {
+      if (!engineCode) return "-";
+      if (engineCode === "Electric") return "Electric";
+      if (engineCode.toLowerCase().includes("hybrid")) return "Hybrid";
+      return engineCode.substring(0, 3);
+    }
+
+    function parseCSVLine(line) {
+      const result = [];
+      let current = "";
+      let insideQuotes = false;
+
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+
+        if (char === '"') {
+          insideQuotes = !insideQuotes;
+        } else if (char === "," && !insideQuotes) {
+          result.push(current.trim());
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+
+      result.push(current.trim());
+      return result;
+    }
+
+    async function loadCSV() {
+      try {
+        const response = await fetch("bmw_database.csv");
+
+        if (!response.ok) {
+          throw new Error("CSV not found");
+        }
+
+        const text = await response.text();
+
+        const lines = text
+          .replace(/\r/g, "")
+          .split("\n")
+          .map(line => line.trim())
+          .filter(line => line !== "");
+
+        const headers = parseCSVLine(lines[0]);
+
+        cars = lines.slice(1).map(line => {
+          const values = parseCSVLine(line);
+          const car = {};
+
+          headers.forEach((header, index) => {
+            car[header] = values[index] || "";
+          });
+
+          car.engine = engineFamily(car.engine_code);
+          return car;
+        }).filter(car =>
+          car.model &&
+          car.body &&
+          car.engine_code &&
+          car.stock_hp &&
+          car.stock_nm &&
+          car.stage1_hp &&
+          car.stage1_nm
+        );
+
+        filteredCars = [...cars];
+
+        updateList();
+
+        document.getElementById("result").innerText =
+          translations[currentLang].loaded;
+
+        updateFooter();
+
+      } catch (error) {
+        document.getElementById("result").innerHTML =
+          `<span class="error">${translations[currentLang].loadError}</span>`;
+        console.error(error);
+      }
+    }
+
+    function updateFooter() {
+      document.getElementById("footer").innerText =
+        `${translations[currentLang].footer}: ${cars.length}`;
+    }
+
+    function updateList() {
+      const searchValue = document.getElementById("search").value.toLowerCase();
+      const list = document.getElementById("carList");
+
+      list.innerHTML = "";
+
+      filteredCars = cars.filter(car => {
+        const fullName =
+          `${car.model} ${car.body} ${car.engine} ${car.engine_code}`.toLowerCase();
+
+        return fullName.includes(searchValue);
       });
 
-      car.engine = engineFamily(car.engine_code);
+      if (filteredCars.length === 0 && cars.length > 0) {
+        list.innerHTML = `<div class="car-item">${translations[currentLang].notFound}</div>`;
+        return;
+      }
 
-      return car;
-    });
+      filteredCars.forEach(car => {
+        const item = document.createElement("div");
+        item.className = "car-item";
+        item.textContent = `${car.model} | ${car.body} | ${car.engine_code}`;
 
-    filteredCars = [...cars];
-    updateList();
+        item.addEventListener("click", () => {
+          selectedCar = car;
+          calculate();
+        });
 
-    document.getElementById("footer").innerText =
-      `${translations[currentLang].footer}: ${cars.length}`;
-  }
+        list.appendChild(item);
+      });
+    }
 
-  function updateList() {
-    const search = document.getElementById("search").value.toLowerCase();
-    const list = document.getElementById("carList");
+    function calculate() {
+      if (!selectedCar) {
+        alert(translations[currentLang].choose);
+        return;
+      }
 
-    list.innerHTML = "";
+      const car = selectedCar;
 
-    filteredCars = cars.filter(car => {
-      if (!car.model || !car.body || !car.engine_code) return false;
+      const stockHp = Number(car.stock_hp);
+      const stockNm = Number(car.stock_nm);
+      const stage1Hp = Number(car.stage1_hp);
+      const stage1Nm = Number(car.stage1_nm);
 
-      const fullName =
-        `${car.model} ${car.body} ${car.engine} ${car.engine_code}`.toLowerCase();
+      if (
+        !stockHp || !stockNm || !stage1Hp || !stage1Nm
+      ) {
+        document.getElementById("result").innerHTML =
+          `<span class="error">Ошибка данных в CSV для этой модели</span>`;
+        return;
+      }
 
-      return fullName.includes(search);
-    });
+      const hpGain = stage1Hp - stockHp;
+      const nmGain = stage1Nm - stockNm;
 
-    filteredCars.forEach(car => {
-      const item = document.createElement("div");
-      item.className = "car-item";
-      item.textContent = `${car.model} | ${car.body} | ${car.engine_code}`;
+      const hpPercent = ((hpGain / stockHp) * 100).toFixed(1);
+      const nmPercent = ((nmGain / stockNm) * 100).toFixed(1);
 
-      item.onclick = () => {
-        selectedCar = car;
-        calculate();
-      };
+      const t = translations[currentLang];
 
-      list.appendChild(item);
-    });
-  }
-
-  function calculate() {
-    const car = selectedCar;
-    if (!car) return alert(translations[currentLang].choose);
-
-    const stockHp = Number(car.stock_hp);
-    const stockNm = Number(car.stock_nm);
-    const stage1Hp = Number(car.stage1_hp);
-    const stage1Nm = Number(car.stage1_nm);
-
-    const hpGain = stage1Hp - stockHp;
-    const nmGain = stage1Nm - stockNm;
-
-    const hpPercent = ((hpGain / stockHp) * 100).toFixed(1);
-    const nmPercent = ((nmGain / stockNm) * 100).toFixed(1);
-
-    const t = translations[currentLang];
-
-    document.getElementById("result").innerText =
+      document.getElementById("result").innerText =
 `${t.model}: ${car.model}
 ${t.body}: ${car.body}
 ${t.engine}: ${car.engine}
@@ -145,9 +329,26 @@ ${t.stage1}: ${stage1Hp} ${t.hp} / ${stage1Nm} ${t.nm}
 
 ${t.hpGain}: +${hpGain} ${t.hp} (${hpPercent}%)
 ${t.nmGain}: +${nmGain} ${t.nm} (${nmPercent}%)`;
-  }
+    }
 
-  document.getElementById("search").addEventListener("input", updateList);
+    function changeLanguage() {
+      currentLang = document.getElementById("language").value;
 
-  loadCSV();
-</script>
+      document.getElementById("search").placeholder =
+        translations[currentLang].search;
+
+      updateFooter();
+      updateList();
+
+      if (selectedCar) {
+        calculate();
+      }
+    }
+
+    document.getElementById("search").addEventListener("input", updateList);
+    document.getElementById("language").addEventListener("change", changeLanguage);
+
+    loadCSV();
+  </script>
+</body>
+</html>
