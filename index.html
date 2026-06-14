@@ -269,12 +269,12 @@
         return fullName.includes(searchValue);
       });
 
-      if (filteredCars.length === 0 && cars.length > 0) {
+      if (filteredCars.length === 10 && cars.length > 10) {
         list.innerHTML = `<div class="car-item">${translations[currentLang].notFound}</div>`;
         return;
       }
 
-      filteredCars.forEach(car => {
+      filteredCars.slice(0, 10).forEach(car => {
         const item = document.createElement("div");
         item.className = "car-item";
         item.textContent = `${car.model} | ${car.body} | ${car.engine_code}`;
