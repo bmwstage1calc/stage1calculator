@@ -85,7 +85,10 @@
 <body>
   <div class="app">
     <img src="bmw_logo.png" alt="BMW Logo">
-
+<select id="language" onchange="changeLanguage()">
+  <option value="ru">Русский</option>
+  <option value="en">English</option>
+</select>
     <h1>BMW Stage1 Calculator</h1>
 
     <input id="search" placeholder="Поиск BMW / кузов / двигатель">
@@ -105,6 +108,35 @@
     let cars = [];
     let filteredCars = [];
     let selectedCar = null;
+    let currentLang = "ru";
+
+const translations = {
+  ru: {
+    title: "BMW Stage1 Calculator",
+    search: "Поиск BMW / кузов / двигатель",
+    model: "Модель",
+    body: "Кузов",
+    engine: "Двигатель",
+    family: "Серия двигателя",
+    stock: "Завод",
+    stage1: "Stage 1",
+    hpGain: "Прирост мощности",
+    nmGain: "Прирост момента"
+  },
+
+  en: {
+    title: "BMW Stage1 Calculator",
+    search: "Search BMW / body / engine",
+    model: "Model",
+    body: "Body",
+    engine: "Engine",
+    family: "Engine Family",
+    stock: "Stock",
+    stage1: "Stage 1",
+    hpGain: "Power Gain",
+    nmGain: "Torque Gain"
+  }
+};
     function engineFamily(engine) {
       if (engine === "Electric") return "Electric";
       return engine.substring(0, 3);
