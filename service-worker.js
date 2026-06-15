@@ -1,4 +1,4 @@
-const CACHE_NAME = "bmw-stage1-calculator-v1";
+const CACHE_NAME = "bmw-stage1-calculator-v2";
 
 const FILES_TO_CACHE = [
   "./",
