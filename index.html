@@ -14,6 +14,26 @@
       text-align: center;
     }
 
+    .language-switcher {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 999;
+    }
+
+    .language-switcher select {
+      width: auto;
+      max-width: none;
+      padding: 6px 8px;
+      font-size: 13px;
+      background: #102542;
+      color: white;
+      border: 1px solid #00a3ff;
+      border-radius: 6px;
+      outline: none;
+      cursor: pointer;
+    }
+
     .app {
       max-width: 1000px;
       margin: auto;
@@ -23,6 +43,7 @@
     h1 {
       color: #00a3ff;
       margin-bottom: 10px;
+      padding-top: 15px;
     }
 
     .subtitle {
@@ -30,7 +51,6 @@
       margin-bottom: 20px;
     }
 
-    select,
     input {
       width: 90%;
       max-width: 650px;
@@ -97,19 +117,19 @@
 </head>
 
 <body>
+  <div class="language-switcher">
+    <select id="language">
+      <option value="ru">🇷🇺 RU</option>
+      <option value="en">🇬🇧 EN</option>
+    </select>
+  </div>
+
   <div class="app">
     <h1>BMW Stage1 Calculator</h1>
 
     <div class="subtitle">
       BMW Performance Database 1996–2025
     </div>
-
-    <select id="language">
-      <option value="ru">Русский</option>
-      <option value="en">English</option>
-    </select>
-
-    <br>
 
     <input
       id="search"
