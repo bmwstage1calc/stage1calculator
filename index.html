@@ -27,7 +27,6 @@
 
     .language-switcher select {
       width: auto;
-      max-width: none;
       padding: 6px 8px;
       font-size: 13px;
       background: #102542;
@@ -61,7 +60,6 @@
       letter-spacing: 1px;
       text-transform: uppercase;
       line-height: 1.1;
-      font-family: Arial, Helvetica, sans-serif;
     }
 
     input {
@@ -92,7 +90,6 @@
     .car-item {
       background: #151922;
       padding: 12px;
-      margin-bottom: 0;
       cursor: pointer;
       border-bottom: 1px solid #24324a;
     }
@@ -183,9 +180,7 @@
     <div id="result">Загружаю базу BMW...</div>
 
     <footer>
-      <div id="footerText">
-        Данные основаны на рекомендуемых настройках Stage 1 для ежедневной эксплуатации
-      </div>
+      <div id="footerText"></div>
       <div class="trademark">© Romanjebaka</div>
     </footer>
   </div>
@@ -195,10 +190,12 @@
     let filteredCars = [];
     let selectedCar = null;
     let currentLang = "ru";
+    let databaseLoaded = false;
 
     const translations = {
       ru: {
         search: "Поиск BMW / кузов / двигатель",
+        loading: "Загружаю базу BMW...",
         model: "Модель",
         body: "Кузов",
         engine: "Двигатель",
@@ -212,11 +209,13 @@
         choose: "Выбери автомобиль из списка",
         loaded: "База загружена. Выбери автомобиль из списка.",
         notFound: "Ничего не найдено",
+        dataError: "Ошибка данных в CSV для этой модели",
         loadError: "Ошибка: не удалось загрузить bmw_database.csv",
         footer: "Данные основаны на рекомендуемых настройках Stage 1 для ежедневной эксплуатации"
       },
       en: {
         search: "Search BMW / body / engine",
+        loading: "Loading BMW database...",
         model: "Model",
         body: "Body",
         engine: "Engine",
@@ -230,10 +229,15 @@
         choose: "Select a car from the list",
         loaded: "Database loaded. Select a car from the list.",
         notFound: "Nothing found",
+        dataError: "CSV data error for this model",
         loadError: "Error: failed to load bmw_database.csv",
         footer: "Data is based on recommended Stage 1 settings for daily driving"
       }
     };
+
+    function t() {
+      return translations[currentLang];
+    }
 
     function engineFamily(engine) {
       if (!engine) return "-";
@@ -264,7 +268,31 @@
       return result;
     }
 
+    function updateStaticTexts() {
+      document.documentElement.lang = currentLang;
+      document.getElementById("search").placeholder = t().search;
+      document.getElementById("footerText").innerText = t().footer;
+    }
+
+    function updateResultText() {
+      const result = document.getElementById("result");
+
+      if (selectedCar) {
+        calculate();
+        return;
+      }
+
+      if (databaseLoaded) {
+        result.innerText = t().loaded;
+      } else {
+        result.innerText = t().loading;
+      }
+    }
+
     async function loadCSV() {
+      updateStaticTexts();
+      updateResultText();
+
       try {
         const response = await fetch("bmw_database.csv");
 
@@ -302,24 +330,16 @@
         );
 
         filteredCars = [...cars];
+        databaseLoaded = true;
 
         updateList();
-
-        document.getElementById("result").innerText =
-          translations[currentLang].loaded;
-
-        updateFooter();
+        updateResultText();
 
       } catch (error) {
         document.getElementById("result").innerHTML =
-          `<span class="error">${translations[currentLang].loadError}</span>`;
+          `<span class="error">${t().loadError}</span>`;
         console.error(error);
       }
-    }
-
-    function updateFooter() {
-      document.getElementById("footerText").innerText =
-        translations[currentLang].footer;
     }
 
     function updateList() {
@@ -329,15 +349,12 @@
       list.innerHTML = "";
 
       filteredCars = cars.filter(car => {
-        const fullName =
-          `${car.model} ${car.body} ${car.engine}`.toLowerCase();
-
+        const fullName = `${car.model} ${car.body} ${car.engine}`.toLowerCase();
         return fullName.includes(searchValue);
       });
 
       if (filteredCars.length === 0) {
-        list.innerHTML =
-          `<div class="car-item">${translations[currentLang].notFound}</div>`;
+        list.innerHTML = `<div class="car-item">${t().notFound}</div>`;
         return;
       }
 
@@ -357,7 +374,7 @@
 
     function calculate() {
       if (!selectedCar) {
-        alert(translations[currentLang].choose);
+        alert(t().choose);
         return;
       }
 
@@ -370,7 +387,7 @@
 
       if (!stockHp || !stockNm || !stage1Hp || !stage1Nm) {
         document.getElementById("result").innerHTML =
-          `<span class="error">Ошибка данных в CSV для этой модели</span>`;
+          `<span class="error">${t().dataError}</span>`;
         return;
       }
 
@@ -380,33 +397,25 @@
       const hpPercent = ((hpGain / stockHp) * 100).toFixed(1);
       const nmPercent = ((nmGain / stockNm) * 100).toFixed(1);
 
-      const t = translations[currentLang];
-
       document.getElementById("result").innerText =
-`${t.model}: ${car.model}
-${t.body}: ${car.body}
-${t.engine}: ${car.engine}
-${t.family}: ${engineFamily(car.engine)}
+`${t().model}: ${car.model}
+${t().body}: ${car.body}
+${t().engine}: ${car.engine}
+${t().family}: ${engineFamily(car.engine)}
 
-${t.stock}: ${stockHp} ${t.hp} / ${stockNm} ${t.nm}
-${t.stage1}: ${stage1Hp} ${t.hp} / ${stage1Nm} ${t.nm}
+${t().stock}: ${stockHp} ${t().hp} / ${stockNm} ${t().nm}
+${t().stage1}: ${stage1Hp} ${t().hp} / ${stage1Nm} ${t().nm}
 
-${t.hpGain}: +${hpGain} ${t.hp} (${hpPercent}%)
-${t.nmGain}: +${nmGain} ${t.nm} (${nmPercent}%)`;
+${t().hpGain}: +${hpGain} ${t().hp} (${hpPercent}%)
+${t().nmGain}: +${nmGain} ${t().nm} (${nmPercent}%)`;
     }
 
     function changeLanguage() {
       currentLang = document.getElementById("language").value;
 
-      document.getElementById("search").placeholder =
-        translations[currentLang].search;
-
-      updateFooter();
+      updateStaticTexts();
       updateList();
-
-      if (selectedCar) {
-        calculate();
-      }
+      updateResultText();
     }
 
     document.getElementById("search").addEventListener("input", updateList);
