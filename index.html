@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>BMW Stage1 Calculator</title>
 
   <link rel="manifest" href="manifest.json">
@@ -129,6 +128,13 @@
       line-height: 1.4;
     }
 
+    .trademark {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #666666;
+      letter-spacing: 0.4px;
+    }
+
     @media (max-width: 600px) {
       .app {
         padding-top: 55px;
@@ -176,8 +182,11 @@
 
     <div id="result">Загружаю базу BMW...</div>
 
-    <footer id="footer">
-      Данные основаны на рекомендуемых настройках Stage 1 для ежедневной эксплуатации
+    <footer>
+      <div id="footerText">
+        Данные основаны на рекомендуемых настройках Stage 1 для ежедневной эксплуатации
+      </div>
+      <div class="trademark">© Romanjebaka</div>
     </footer>
   </div>
 
@@ -309,7 +318,7 @@
     }
 
     function updateFooter() {
-      document.getElementById("footer").innerText =
+      document.getElementById("footerText").innerText =
         translations[currentLang].footer;
     }
 
