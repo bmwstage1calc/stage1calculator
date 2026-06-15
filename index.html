@@ -112,6 +112,7 @@
       color: #888888;
       margin-top: 25px;
       font-size: 14px;
+      line-height: 1.4;
     }
 
     @media (max-width: 600px) {
@@ -153,7 +154,9 @@
 
     <div id="result">Загружаю базу BMW...</div>
 
-    <footer id="footer">BMW Performance Database</footer>
+    <footer id="footer">
+      Данные основаны на рекомендуемых настройках Stage 1 для ежедневной эксплуатации
+    </footer>
   </div>
 
   <script>
@@ -179,7 +182,7 @@
         loaded: "База загружена. Выбери автомобиль из списка.",
         notFound: "Ничего не найдено",
         loadError: "Ошибка: не удалось загрузить bmw_database.csv",
-        footer: "BMW Performance Database 1996–2025 | Моделей в базе"
+        footer: "Данные основаны на рекомендуемых настройках Stage 1 для ежедневной эксплуатации"
       },
       en: {
         search: "Search BMW / body / engine",
@@ -197,7 +200,7 @@
         loaded: "Database loaded. Select a car from the list.",
         notFound: "Nothing found",
         loadError: "Error: failed to load bmw_database.csv",
-        footer: "BMW Performance Database 1996–2025 | Models in database"
+        footer: "Data is based on recommended Stage 1 settings for daily driving"
       }
     };
 
@@ -285,7 +288,7 @@
 
     function updateFooter() {
       document.getElementById("footer").innerText =
-        `${translations[currentLang].footer}: ${cars.length}`;
+        translations[currentLang].footer;
     }
 
     function updateList() {
@@ -302,7 +305,8 @@
       });
 
       if (filteredCars.length === 0) {
-        list.innerHTML = `<div class="car-item">${translations[currentLang].notFound}</div>`;
+        list.innerHTML =
+          `<div class="car-item">${translations[currentLang].notFound}</div>`;
         return;
       }
 
