@@ -37,18 +37,18 @@
     .app {
       max-width: 1000px;
       margin: auto;
-      padding: 25px;
+      padding: 70px 25px 25px;
     }
 
     h1 {
       color: #00a3ff;
-      margin-bottom: 10px;
-      padding-top: 15px;
-    }
-
-    .subtitle {
-      color: #cccccc;
-      margin-bottom: 20px;
+      margin: 0 0 25px;
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      line-height: 1.1;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     input {
@@ -113,6 +113,21 @@
       margin-top: 25px;
       font-size: 14px;
     }
+
+    @media (max-width: 600px) {
+      .app {
+        padding-top: 65px;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+      .language-switcher {
+        top: 10px;
+        right: 10px;
+      }
+    }
   </style>
 </head>
 
@@ -125,11 +140,7 @@
   </div>
 
   <div class="app">
-    <h1>BMW Stage1 Calculator</h1>
-
-    <div class="subtitle">
-      BMW Performance Database 1996–2025
-    </div>
+    <h1>BMW STAGE1 CALCULATOR</h1>
 
     <input
       id="search"
