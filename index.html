@@ -37,7 +37,16 @@
     .app {
       max-width: 1000px;
       margin: auto;
-      padding: 70px 25px 25px;
+      padding: 60px 25px 25px;
+    }
+
+    .bmw-logo {
+      width: 95px;
+      height: 95px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 18px;
+      filter: drop-shadow(0 0 10px rgba(0, 163, 255, 0.35));
     }
 
     h1 {
@@ -117,7 +126,13 @@
 
     @media (max-width: 600px) {
       .app {
-        padding-top: 65px;
+        padding-top: 55px;
+      }
+
+      .bmw-logo {
+        width: 78px;
+        height: 78px;
+        margin-bottom: 14px;
       }
 
       h1 {
@@ -141,6 +156,8 @@
   </div>
 
   <div class="app">
+    <img src="bmw_logo.png" alt="BMW Logo" class="bmw-logo">
+
     <h1>BMW STAGE1 CALCULATOR</h1>
 
     <input
