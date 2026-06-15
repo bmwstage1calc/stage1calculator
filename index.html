@@ -45,30 +45,28 @@
     }
 
     #carList {
-    width: 90%;
-    max-width: 800px;
-    height: 180px;
-    overflow-y: auto;
-    margin: 20px auto;
-    text-align: left;
-
-    border: 1px solid #00a3ff;
-    border-radius: 8px;
-    background: #151922;
-}
+      width: 90%;
+      max-width: 800px;
+      height: 180px;
+      overflow-y: auto;
+      margin: 20px auto;
+      text-align: left;
+      border: 1px solid #00a3ff;
+      border-radius: 8px;
+      background: #151922;
+    }
 
     .car-item {
       background: #151922;
       padding: 12px;
-      margin-bottom: 8px;
-      border-radius: 8px;
+      margin-bottom: 0;
       cursor: pointer;
-      border: 1px solid transparent;
+      border-bottom: 1px solid #24324a;
     }
 
     .car-item:hover {
-      border-color: #00a3ff;
       background: #1d2430;
+      color: #00a3ff;
     }
 
     #result {
@@ -139,7 +137,6 @@
         model: "Модель",
         body: "Кузов",
         engine: "Двигатель",
-        engineCode: "Маркировка двигателя",
         family: "Серия двигателя",
         stock: "Завод",
         stage1: "Stage 1",
@@ -158,7 +155,6 @@
         model: "Model",
         body: "Body",
         engine: "Engine",
-        engineCode: "Engine code",
         family: "Engine family",
         stock: "Stock",
         stage1: "Stage 1",
@@ -174,11 +170,11 @@
       }
     };
 
-    function engineFamily(engineCode) {
-      if (!engineCode) return "-";
-      if (engineCode === "Electric") return "Electric";
-      if (engineCode.toLowerCase().includes("hybrid")) return "Hybrid";
-      return engineCode.substring(0, 3);
+    function engineFamily(engine) {
+      if (!engine) return "-";
+      if (engine === "Electric") return "Electric";
+      if (engine.toLowerCase().includes("hybrid")) return "Hybrid";
+      return engine.substring(0, 3);
     }
 
     function parseCSVLine(line) {
@@ -229,12 +225,11 @@
             car[header] = values[index] || "";
           });
 
-          car.engine = engineFamily(car.engine_code);
           return car;
         }).filter(car =>
           car.model &&
           car.body &&
-          car.engine_code &&
+          car.engine &&
           car.stock_hp &&
           car.stock_nm &&
           car.stage1_hp &&
@@ -270,20 +265,20 @@
 
       filteredCars = cars.filter(car => {
         const fullName =
-          `${car.model} ${car.body} ${car.engine} ${car.engine_code}`.toLowerCase();
+          `${car.model} ${car.body} ${car.engine}`.toLowerCase();
 
         return fullName.includes(searchValue);
       });
 
-      if (filteredCars.length === 10 && cars.length > 10) {
+      if (filteredCars.length === 0) {
         list.innerHTML = `<div class="car-item">${translations[currentLang].notFound}</div>`;
         return;
       }
 
-      filteredCars.slice(0, 10).forEach(car => {
+      filteredCars.forEach(car => {
         const item = document.createElement("div");
         item.className = "car-item";
-        item.textContent = `${car.model} | ${car.body} | ${car.engine_code}`;
+        item.textContent = `${car.model} | ${car.body} | ${car.engine}`;
 
         item.addEventListener("click", () => {
           selectedCar = car;
@@ -307,9 +302,7 @@
       const stage1Hp = Number(car.stage1_hp);
       const stage1Nm = Number(car.stage1_nm);
 
-      if (
-        !stockHp || !stockNm || !stage1Hp || !stage1Nm
-      ) {
+      if (!stockHp || !stockNm || !stage1Hp || !stage1Nm) {
         document.getElementById("result").innerHTML =
           `<span class="error">Ошибка данных в CSV для этой модели</span>`;
         return;
@@ -327,8 +320,7 @@
 `${t.model}: ${car.model}
 ${t.body}: ${car.body}
 ${t.engine}: ${car.engine}
-${t.engineCode}: ${car.engine_code}
-${t.family}: ${engineFamily(car.engine_code)}
+${t.family}: ${engineFamily(car.engine)}
 
 ${t.stock}: ${stockHp} ${t.hp} / ${stockNm} ${t.nm}
 ${t.stage1}: ${stage1Hp} ${t.hp} / ${stage1Nm} ${t.nm}
